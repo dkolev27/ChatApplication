@@ -7,9 +7,12 @@ import java.util.Arrays;
 
 public class SendingMessageUtils {
 
-    public static final int BYTES_FOR_INTEGER = 4; // because an integer is represented as 4 bytes (32 bits)
-    public static final int START_IDX = 0;
+    // Constants
+    private static final int BYTES_FOR_INTEGER = 4; // because an integer is represented as 4 bytes (32 bits)
+    private static final int START_IDX = 0;
 
+
+    // Sending message methods
     public static byte[] convertIntToByteArray(final int i) {
         ByteBuffer buffer = ByteBuffer.allocate(BYTES_FOR_INTEGER);
         buffer.putInt(i);
@@ -83,4 +86,5 @@ public class SendingMessageUtils {
         }
         return allBytesArray;
     }
+
 }

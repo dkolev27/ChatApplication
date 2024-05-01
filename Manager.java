@@ -13,13 +13,23 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Manager {
-    static private ServerSocket serverSocket = null;
-    static private Socket clientSocket = null;
-    static private DataInputStream in = null;
-    static private DataOutputStream out = null;
 
+    // Constant
     private static final int PORT = 4444;
 
+    private static final String USER_1 = "Ivan";
+    private static final String USER_2 = "Mitko";
+
+
+    // Static fields
+    private static ServerSocket serverSocket = null;
+    private static Socket clientSocket = null;
+    private static DataInputStream in = null;
+    private static DataOutputStream out = null;
+
+
+    // main business logic
+    // how the connection is made
     public void manage() throws IOException, InterruptedException {
         String username;
         try {
@@ -28,21 +38,17 @@ public class Manager {
             out = new DataOutputStream(clientSocket.getOutputStream());
             in = new DataInputStream(clientSocket.getInputStream());
 
-            username = "Ivan";
-            System.out.println(username + " has joined the chat!");
+            System.out.println(USER_1 + " has joined the chat!");
 
-            execute(username);
-
+            execute(USER_1);
         } catch (IOException | InterruptedException e) {
             clientSocket = new Socket("localhost", PORT);
             out = new DataOutputStream(clientSocket.getOutputStream());
             in = new DataInputStream(clientSocket.getInputStream());
+            
+            System.out.println(USER_2 + " has joined the chat!");
 
-            username = "Mitko";
-            System.out.println(username + " has joined the chat!");
-
-            execute(username);
-
+            execute(USER_2);
         } finally {
             Stream stream = new Stream(serverSocket, clientSocket, in, out);
             CloseStream cs = new CloseStream(stream);
@@ -63,4 +69,5 @@ public class Manager {
 
         Thread.currentThread().join();
     }
+
 }

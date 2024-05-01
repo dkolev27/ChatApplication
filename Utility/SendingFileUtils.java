@@ -13,10 +13,16 @@ import java.util.Formatter;
 
 public class SendingFileUtils {
 
-    public static final int BYTES_FOR_LONG = 8;
+    // Constants
     public static final int CHUNK_SIZE = 1024;
-    public static final int START_IDX = 0;
+    private static final int BYTES_FOR_LONG = 8;
+    private static final int START_IDX = 0;
 
+    private static final String FILEPATH_PHOTO = "filesToSend\\balon.jpg";
+    private static final String CHECKSUM_ALGORITHM = "MD5";
+
+
+    // Sending file methods
     public static byte[] convertLongToByteArray(final long l) {
         ByteBuffer buffer = ByteBuffer.allocate(BYTES_FOR_LONG);
         buffer.putLong(l);
@@ -40,9 +46,7 @@ public class SendingFileUtils {
         // get the command in byte[]
         byte[] commandBytes = command.getBytes();
 
-        //File file = new File("D:\\Java\\Abalta\\Network Programming\\src\\chatapp_combined\\filesToSend\\mitkoPhoto.jpg");      // 314KB - done
-        File file = new File("D:\\Java\\Abalta\\Network Programming\\src\\chatapp_combined\\filesToSend\\indianaJonesFilm.mkv");      // 9.67GB - done
-
+        File file = new File(FILEPATH_PHOTO);
 
         // get the file length in byte[]
         long fileLength = file.length();
@@ -56,7 +60,6 @@ public class SendingFileUtils {
 
         // get the fileName in byte[]
         byte[] fileNameBytes = fileName.getBytes();
-
 
         // construct a byte[] consists of: the bytes of command length, the command bytes, the length of the file,
         // the length of the filename and the filename itself
@@ -75,14 +78,14 @@ public class SendingFileUtils {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             System.out.println(Message.getTimeString() + " Sending file...");
 
-            int chunkSize = CHUNK_SIZE;      // sends 9.67GB for 4 min and 56 seconds
-            //int chunkSize = CHUNK_SIZE * 4;  // sends 9.67GB for 5 min and 38 seconds
-            //int chunkSize = CHUNK_SIZE * 8;  // sends 9.67GB for 4 min and 56 seconds
-            //int chunkSize = CHUNK_SIZE * 16; // checksum failed
+            int chunkSize = CHUNK_SIZE;        // sends 9.67GB for 4 min and 56 seconds on M2 chip
+            //int chunkSize = CHUNK_SIZE * 4;  // sends 9.67GB for 5 min and 38 seconds on M2 chip
+            //int chunkSize = CHUNK_SIZE * 8;  // sends 9.67GB for 4 min and 56 seconds on M2 chip
+            //int chunkSize = CHUNK_SIZE * 16; // checksum failed on M2 chip
 
             byte[] buffer = new byte[chunkSize];
 
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance(CHECKSUM_ALGORITHM);
 
             int bytesRead;
             long totalBytesLeft = fileLength;
@@ -143,6 +146,8 @@ public class SendingFileUtils {
         for (byte b : fileNameBytes) {
             allBytesArray[idx++] = b;
         }
+
         return allBytesArray;
     }
+
 }

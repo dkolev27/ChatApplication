@@ -15,30 +15,38 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class Message implements Serializable {
+
     // to be sure that this current version of the class can be serialized/deserialized
     // if we update the class, we must generate a new value
     @Serial
     private static final long serialVersionUID = -2417267367232152732L;
 
-    public final int BYTES_FOR_ONE_INTEGER = 4;
-    public final int BYTES_FOR_ONE_LONG = 8;
-    public final String SENDING_MESSAGE_COMMAND = "-m";
-    public final String SENDING_FILE_COMMAND = "-f";
-    public final int START_IDX = 0;
+
+    // Constants
+    private final int BYTES_FOR_ONE_INTEGER = 4;
+    private final int BYTES_FOR_ONE_LONG = 8;
+    private final String SENDING_MESSAGE_COMMAND = "-m";
+    private final String SENDING_FILE_COMMAND = "-f";
+    private final int START_IDX = 0;
+
+    private static final String ANSI_BLUE = "\u001B[34m";
+    private static final String ANSI_RESET = "\u001B[0m";
+
+    private static final String DIRECTORY_TO_RECEIVE = "receivedFiles";
+    private static final String CHECKSUM_ALGORITHM = "MD5";
+    private static final String DATE_FORMAT = "HH:mm:ss";
 
 
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_RESET = "\u001B[0m";
+    // Fields
+    private ServerSocket serverSocket; // MAX capacity = 8192 bytes (8 kilobytes) (in most of the cases)
+    private Socket clientSocket;       // MAX capacity = 8192 bytes (8 kilobytes) (in most of the cases)
+    private DataInputStream in;        // MAX capacity = 8192 bytes (8 kilobytes)
+    private DataOutputStream out;      // MAX capacity = 8192 bytes (8 kilobytes)
+    private String senderName;
+    private final Scanner scanner = new Scanner(System.in);
 
 
-    public ServerSocket serverSocket; // MAX capacity = 8192 bytes (8 kilobytes) (in most of the cases)
-    public Socket clientSocket;       // MAX capacity = 8192 bytes (8 kilobytes) (in most of the cases)
-    public DataInputStream in;        // MAX capacity = 8192 bytes (8 kilobytes)
-    public DataOutputStream out;      // MAX capacity = 8192 bytes (8 kilobytes)
-    public String senderName;
-    public final Scanner scanner = new Scanner(System.in);
-
-
+    // Constructor
     public Message(ServerSocket serverSocket, Socket clientSocket, DataInputStream in, DataOutputStream out, String senderName) {
         this.serverSocket = serverSocket;
         this.clientSocket = clientSocket;
@@ -47,6 +55,8 @@ public class Message implements Serializable {
         this.senderName = senderName;
     }
 
+
+    // Methods
     public synchronized void send() {
         new Thread(() -> {
             Thread.currentThread().setName("Send Message Thread");
@@ -140,8 +150,7 @@ public class Message implements Serializable {
         String fileName = getFileName(fileNameLength);
 
         // now, we have to receive the file in chunks
-        String directoryToReceive = "D:\\Java\\Abalta\\Network Programming\\src\\chatapp_combined\\receivedFiles";
-        File fileToReceive = new File(directoryToReceive, fileName);
+        File fileToReceive = new File(DIRECTORY_TO_RECEIVE, fileName);
 
         // receive the file in chunks of 1024 bytes (1KB)
         receiveFileInChunks(fileLength, fileToReceive);
@@ -159,7 +168,7 @@ public class Message implements Serializable {
 
             byte[] buffer = new byte[chunkSize];
 
-            MessageDigest md = MessageDigest.getInstance("MD5");
+            MessageDigest md = MessageDigest.getInstance(CHECKSUM_ALGORITHM);
 
             int bytesRead;
             long totalBytesLeft = fileLength;
@@ -176,11 +185,11 @@ public class Message implements Serializable {
             byte[] receivedFileHash = new byte[HASH_SIZE];
             // read the sent hash value of the file and write it into receivedFileHash
             in.readFully(receivedFileHash);
-            System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); // TESTING
+            System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); //  FOR TEST
 
             // calculate the hash file that has been read from the stream
             byte[] calculatedFileHash = md.digest();
-            System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // TESTING
+            System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // FOR TEST
 
             // compare receivedFileHash and calculatedFileHash
             if (Arrays.equals(receivedFileHash, calculatedFileHash)) {
@@ -228,9 +237,10 @@ public class Message implements Serializable {
 
     public static String getTimeString() {
         LocalTime currentTime = LocalTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
         String formattedTime = currentTime.format(formatter);
 
         return "[" + formattedTime + "] ";
     }
+
 }

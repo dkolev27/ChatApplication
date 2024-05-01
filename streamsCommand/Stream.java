@@ -7,11 +7,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Stream {
+
+    // Fields
     private final ServerSocket serverSocket;
     private final Socket clientSocket;
     private final DataInputStream in;
     private final DataOutputStream out;
 
+
+    // Constructor
     public Stream(ServerSocket serverSocket, Socket clientSocket, DataInputStream in, DataOutputStream out) {
         this.serverSocket = serverSocket;
         this.clientSocket = clientSocket;
@@ -19,6 +23,8 @@ public class Stream {
         this.out = out;
     }
 
+
+    // Close stream method
     public void closeEverything() {
         try {
             if (in != null) {
@@ -37,9 +43,10 @@ public class Stream {
                 serverSocket.close();
             }
 
-            System.out.println("closed"); // FOR TESTING
+            System.out.println("closed"); // FOR TEST
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }
