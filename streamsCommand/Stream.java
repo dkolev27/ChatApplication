@@ -6,14 +6,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+// The Stream class handles the input and output streams for network communication
 public class Stream {
 
     // Fields
-    private final ServerSocket serverSocket;
-    private final Socket clientSocket;
-    private final DataInputStream in;
-    private final DataOutputStream out;
-
+    private final ServerSocket serverSocket;  // The server socket
+    private final Socket clientSocket;        // The client socket
+    private final DataInputStream in;         // Input stream for reading data
+    private final DataOutputStream out;       // Output stream for sending data
 
     // Constructor
     public Stream(ServerSocket serverSocket, Socket clientSocket, DataInputStream in, DataOutputStream out) {
@@ -23,8 +23,7 @@ public class Stream {
         this.out = out;
     }
 
-
-    // Close stream method
+    // Method to close all streams and sockets
     public void closeEverything() {
         try {
             if (in != null) {
@@ -42,8 +41,6 @@ public class Stream {
             if (serverSocket != null) {
                 serverSocket.close();
             }
-
-            System.out.println("closed"); // FOR TEST
         } catch (IOException e) {
             e.printStackTrace();
         }

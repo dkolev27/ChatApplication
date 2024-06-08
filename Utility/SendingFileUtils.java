@@ -1,7 +1,6 @@
 package chatapp_combined.Utility;
 
 import chatapp_combined.messagesCommand.Message;
-import com.sun.tools.javac.Main;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -9,79 +8,102 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Formatter;
 
+/**
+ * Utility class for sending files in a chat application.
+ */
 public class SendingFileUtils {
 
     // Constants
     public static final int CHUNK_SIZE = 1024;
     private static final int BYTES_FOR_LONG = 8;
     private static final int START_IDX = 0;
-
-    private static final String FILEPATH_PHOTO = "filesToSend\\balon.jpg";
     private static final String CHECKSUM_ALGORITHM = "MD5";
 
-
-    // Sending file methods
+    /**
+     * Converts a long value to a byte array.
+     *
+     * @param l The long value to be converted.
+     * @return The byte array representation of the long value.
+     */
     public static byte[] convertLongToByteArray(final long l) {
         ByteBuffer buffer = ByteBuffer.allocate(BYTES_FOR_LONG);
         buffer.putLong(l);
         return buffer.array();
     }
 
+    /**
+     * Converts a byte array to a long value.
+     *
+     * @param byteArray The byte array to be converted.
+     * @return The long value represented by the byte array.
+     */
     public static long convertByteArrayToLong(final byte[] byteArray) {
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
         return buffer.getLong();
     }
 
+    /**
+     * Sends a file over a DataOutputStream.
+     *
+     * @param message The message containing the file path.
+     * @param out     The DataOutputStream for sending data.
+     * @throws IOException If an I/O error occurs.
+     */
     public static void sendFileBytes(String message, DataOutputStream out) throws IOException {
-        final int END_IDX = 2;
-        String command = new String(Arrays.copyOfRange(message.getBytes(), START_IDX, END_IDX)); // separate the command from the full inputted string
-        //String path = new String(Arrays.copyOfRange(message.getBytes(), END + 1, message.length()));
+        final int END_COMMAND_IDX = 2;
+        // Separate the command from the full inputted string
+        String command = new String(Arrays.copyOfRange(message.getBytes(), START_IDX, END_COMMAND_IDX));
+        // Separate the filepath from the full inputted string
+        String path = new String(Arrays.copyOfRange(message.getBytes(), END_COMMAND_IDX + 1, message.length()));
 
-        // get the length of the command in byte[]
+        // Get the length of the command in byte[]
         int totalLengthCommand = command.length();
         byte[] totalLengthCommandAsByteArray = SendingMessageUtils.convertIntToByteArray(totalLengthCommand);
 
-        // get the command in byte[]
+        // Get the command in byte[]
         byte[] commandBytes = command.getBytes();
 
-        File file = new File(FILEPATH_PHOTO);
+        File file = new File(path);
 
-        // get the file length in byte[]
+        // Get the file length in byte[]
         long fileLength = file.length();
         byte[] fileLengthAsByteArray = convertLongToByteArray(fileLength);
 
         String fileName = file.getName();
 
-        // get the fileName length in byte[]
+        // Get the fileName length in byte[]
         int totalLengthFileName = fileName.length();
         byte[] totalLengthFileNameAsByteArray = SendingMessageUtils.convertIntToByteArray(totalLengthFileName);
 
-        // get the fileName in byte[]
+        // Get the fileName in byte[]
         byte[] fileNameBytes = fileName.getBytes();
 
-        // construct a byte[] consists of: the bytes of command length, the command bytes, the length of the file,
-        // the length of the filename and the filename itself
+        // Construct a byte[] consists of: the bytes of command length, the command bytes, the length of the file,
+        // the length of the filename, and the filename itself
         byte[] allBytesArray = fillAllBytesArray(totalLengthCommandAsByteArray, commandBytes, fileLengthAsByteArray,
                 totalLengthFileNameAsByteArray, fileNameBytes);
 
-        // at first, send the bytes that represent the command length, the command, the length of the file as byte[],
-        // the length of the fileName and the fileName in byte[]
+        // At first, send the bytes that represent the command length, the command, the length of the file as byte[],
+        // the length of the fileName, and the fileName in byte[]
         sendAllBytesArray(out, allBytesArray);
 
-        // now, we have to send the file in chunks
+        // Now, send the file in chunks
         sendFileInChunks(out, file, fileLength);
     }
 
+    /**
+     * Sends the file in chunks over a DataOutputStream.
+     *
+     * @param out        The DataOutputStream for sending data.
+     * @param file       The file to be sent.
+     * @param fileLength The length of the file.
+     */
     public static void sendFileInChunks(DataOutputStream out, File file, long fileLength) {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             System.out.println(Message.getTimeString() + " Sending file...");
 
-            int chunkSize = CHUNK_SIZE;        // sends 9.67GB for 4 min and 56 seconds on M2 chip
-            //int chunkSize = CHUNK_SIZE * 4;  // sends 9.67GB for 5 min and 38 seconds on M2 chip
-            //int chunkSize = CHUNK_SIZE * 8;  // sends 9.67GB for 4 min and 56 seconds on M2 chip
-            //int chunkSize = CHUNK_SIZE * 16; // checksum failed on M2 chip
+            int chunkSize = CHUNK_SIZE; // Size of each chunk
 
             byte[] buffer = new byte[chunkSize];
 
@@ -93,15 +115,15 @@ public class SendingFileUtils {
             for (int i = 0; i < end; i++) {
                 bytesRead = fileInputStream.read(buffer, START_IDX, (int) Math.min(totalBytesLeft, chunkSize));
                 out.write(buffer, START_IDX, bytesRead);
-                md.update(buffer, START_IDX, bytesRead); // update the file hash every time we write a new chunk to the stream
+                md.update(buffer, START_IDX, bytesRead); // Update the file hash every time we write a new chunk to the stream
                 totalBytesLeft -= chunkSize;
             }
 
-            // completes the hash computation and returns the final value of the hash as byte[]
+            // Completes the hash computation and returns the final value of the hash as byte[]
             byte[] fileHash = md.digest();
-            // send the hash of the file as byte[]
-            out.write(fileHash);
 
+            // Send the hash of the file as byte[]
+            out.write(fileHash);
             out.flush();
 
             System.out.println(Message.getTimeString() + " File sent!");
@@ -110,6 +132,12 @@ public class SendingFileUtils {
         }
     }
 
+    /**
+     * Sends a byte array over a DataOutputStream.
+     *
+     * @param out           The DataOutputStream for sending data.
+     * @param allBytesArray The byte array to be sent.
+     */
     private static void sendAllBytesArray(DataOutputStream out, byte[] allBytesArray) {
         try {
             out.write(allBytesArray);
@@ -119,14 +147,25 @@ public class SendingFileUtils {
         }
     }
 
+    /**
+     * Fills a byte array with various components of the file to be sent.
+     *
+     * @param totalLengthCommandAsByteArray    The length of the command.
+     * @param commandBytes                     The command bytes.
+     * @param fileLengthAsByteArray            The length of the file.
+     * @param totalLengthFileNameAsByteArray   The length of the file name.
+     * @param fileNameBytes                    The file name bytes.
+     * @return The filled byte array.
+     */
     private static byte[] fillAllBytesArray(byte[] totalLengthCommandAsByteArray, byte[] commandBytes,
-                                            byte[] fileLengthAsByteArray,         byte[] totalLengthFileNameAsByteArray,
+                                            byte[] fileLengthAsByteArray, byte[] totalLengthFileNameAsByteArray,
                                             byte[] fileNameBytes) {
         int allLengths = totalLengthCommandAsByteArray.length + commandBytes.length +
                 fileLengthAsByteArray.length + totalLengthFileNameAsByteArray.length + fileNameBytes.length;
         byte[] allBytesArray = new byte[allLengths];
 
         int idx = START_IDX;
+
         for (byte b : totalLengthCommandAsByteArray) {
             allBytesArray[idx++] = b;
         }

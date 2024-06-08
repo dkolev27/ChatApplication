@@ -12,13 +12,15 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+// The Manager class handles the setup and management of the chat application,
+// including establishing connections and managing message and stream operations.
 public class Manager {
 
-    // Constant
+    // Constants
     private static final int PORT = 4444;
 
-    private static final String USER_1 = "Ivan";
-    private static final String USER_2 = "Mitko";
+    private static final String USER_1 = "USER_1";
+    private static final String USER_2 = "USER_2";
 
 
     // Static fields
@@ -28,8 +30,7 @@ public class Manager {
     private static DataOutputStream out = null;
 
 
-    // main business logic
-    // how the connection is made
+    // Main business logic for managing the connection
     public void manage() throws IOException, InterruptedException {
         String username;
         try {
@@ -45,25 +46,26 @@ public class Manager {
             clientSocket = new Socket("localhost", PORT);
             out = new DataOutputStream(clientSocket.getOutputStream());
             in = new DataInputStream(clientSocket.getInputStream());
-            
+
             System.out.println(USER_2 + " has joined the chat!");
 
             execute(USER_2);
         } finally {
+            // Close all streams and sockets
             Stream stream = new Stream(serverSocket, clientSocket, in, out);
             CloseStream cs = new CloseStream(stream);
             cs.execute();
         }
     }
 
-    private static void execute(String username) throws InterruptedException {
+    private static void execute(String username) throws InterruptedException, IOException {
         Message message = new Message(serverSocket, clientSocket, in, out, username);
 
-        // send message to the peer2 (separate thread)
+        // Send a message using a separate thread
         SendMessage sendMessage = new SendMessage(message);
         sendMessage.execute();
 
-        // receive message from the peer2 (separate thread)
+        // Receive a message using a separate thread
         ReceiveMessage receiveMessage = new ReceiveMessage(message);
         receiveMessage.execute();
 

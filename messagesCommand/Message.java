@@ -14,6 +14,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Scanner;
 
+/**
+ * Represents a message exchanged between users in the chat application.
+ */
 public class Message implements Serializable {
 
     // to be sure that this current version of the class can be serialized/deserialized
@@ -28,6 +31,7 @@ public class Message implements Serializable {
     private final String SENDING_MESSAGE_COMMAND = "-m";
     private final String SENDING_FILE_COMMAND = "-f";
     private final int START_IDX = 0;
+    private final int CHUNK_SIZE = 1024;
 
     private static final String ANSI_BLUE = "\u001B[34m";
     private static final String ANSI_RESET = "\u001B[0m";
@@ -47,7 +51,8 @@ public class Message implements Serializable {
 
 
     // Constructor
-    public Message(ServerSocket serverSocket, Socket clientSocket, DataInputStream in, DataOutputStream out, String senderName) {
+    public Message(ServerSocket serverSocket, Socket clientSocket, DataInputStream in, DataOutputStream out,
+                   String senderName) {
         this.serverSocket = serverSocket;
         this.clientSocket = clientSocket;
         this.in = in;
@@ -57,6 +62,9 @@ public class Message implements Serializable {
 
 
     // Methods
+    /**
+     * Initiates the sending of messages.
+     */
     public synchronized void send() {
         new Thread(() -> {
             Thread.currentThread().setName("Send Message Thread");
@@ -67,6 +75,9 @@ public class Message implements Serializable {
         }).start();
     }
 
+    /**
+     * Initiates the receiving of messages.
+     */
     public synchronized void receive() {
         new Thread(() -> {
             Thread.currentThread().setName("Receive Message Thread");
@@ -83,12 +94,15 @@ public class Message implements Serializable {
         }).start();
     }
 
+    /**
+     * Sends a message or a file to the other user.
+     */
     public void sendToOtherUser() {
         String msg = scanner.nextLine();
         String messageToSend = msg;
         String[] msgArr = msg.split(" ");
         if (msgArr[START_IDX].equals(SENDING_MESSAGE_COMMAND) ||
-            msgArr[START_IDX].equals(SENDING_FILE_COMMAND)) {
+                msgArr[START_IDX].equals(SENDING_FILE_COMMAND)) {
 
             String command = msgArr[START_IDX];
             msgArr = Arrays.copyOfRange(msgArr, 1, msgArr.length);
@@ -111,33 +125,52 @@ public class Message implements Serializable {
         }
     }
 
+    /**
+     * Receives a message from the other user.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
     private void receiveFromOtherUser() throws IOException {
-        // read first 4 bytes that they construct one int, which is the length of the command
+        // Read the length of the command (4 bytes)
         int commandLength = getLength();
 
-        // read the command bytes, they construct a String that holds the command
+        // Read the command bytes and construct a String representing the command
         String command = getCommand(commandLength);
 
-        // if the received command is "-m" it will send a message
-        // if the received command is "-f" it will send a file
+        // Determine the action to take based on the received command
         runCommand(command);
     }
 
+    /**
+     * Executes the appropriate action based on the received command.
+     *
+     * @param command The command received from the other user.
+     * @throws IOException If an I/O error occurs.
+     */
     private void runCommand(String command) throws IOException {
+        // Execute different actions based on the command received
         switch (command) {
             case SENDING_MESSAGE_COMMAND -> receiveMessage();
             case SENDING_FILE_COMMAND    -> receiveFile();
         }
     }
 
+    /**
+     * Receives a message from the other user and prints it to the console.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
     private void receiveMessage() throws IOException {
         // Read the total length of the message
         int messageLength = getLength();
 
-        // Read the message bytes
+        // Read the message bytes and construct a String representing the message
         String message = getMessage(messageLength);
+
+        // Print the received message along with the sender's name and timestamp
         System.out.println(getTimeString() + senderName + ": " + message);
     }
+
 
     private void receiveFile() throws IOException {
         // Read the total length of the file
@@ -160,11 +193,11 @@ public class Message implements Serializable {
         try (FileOutputStream fileOutputStream = new FileOutputStream(fileToReceive)) {
             System.out.println(getTimeString() + "Receiving file...");
 
-            int chunkSize = SendingFileUtils.CHUNK_SIZE;      // sends 9.67GB for 4 min and 56 seconds
-            //int chunkSize = SendingFileUtils.CHUNK_SIZE * 4;  // sends 9.67GB for 5 min and 38 seconds
-            //int chunkSize = SendingFileUtils.CHUNK_SIZE * 8;  // sends 9.67GB for 4 min and 56 seconds
-            //int chunkSize = SendingFileUtils.CHUNK_SIZE * 16; // checksum failed
-            //int chunkSize = SendingFileUtils.CHUNK_SIZE * 32; // checksum failed
+            int chunkSize = CHUNK_SIZE;      // sends 9.67GB for 4 min and 56 seconds
+            //int chunkSize = CHUNK_SIZE * 4;  // sends 9.67GB for 5 min and 38 seconds
+            //int chunkSize = CHUNK_SIZE * 8;  // sends 9.67GB for 4 min and 56 seconds
+            //int chunkSize = CHUNK_SIZE * 16; // checksum failed
+            //int chunkSize = CHUNK_SIZE * 32; // checksum failed
 
             byte[] buffer = new byte[chunkSize];
 
@@ -183,13 +216,13 @@ public class Message implements Serializable {
             // receive the hash of the file as byte[]
             final int HASH_SIZE = 16; // because the MD5 algorithm generates a byte[] which has a size of the hash value 16 bytes (128 bits)
             byte[] receivedFileHash = new byte[HASH_SIZE];
-            // read the sent hash value of the file and write it into receivedFileHash
+            // read the hash value of the file that has been sent and write it into receivedFileHash
             in.readFully(receivedFileHash);
-            System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); //  FOR TEST
+            System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); //  FOR TESTING
 
             // calculate the hash file that has been read from the stream
             byte[] calculatedFileHash = md.digest();
-            System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // FOR TEST
+            System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // FOR TESTING
 
             // compare receivedFileHash and calculatedFileHash
             if (Arrays.equals(receivedFileHash, calculatedFileHash)) {
@@ -205,36 +238,78 @@ public class Message implements Serializable {
         }
     }
 
+    /**
+     * Reads and retrieves the command sent by the other user.
+     *
+     * @param commandLength The length of the command to be read.
+     * @return The command received from the other user.
+     * @throws IOException If an I/O error occurs.
+     */
     private String getCommand(int commandLength) throws IOException {
+        // Read the bytes representing the command and construct a String
         byte[] commandBytes = new byte[commandLength];
         in.readFully(commandBytes, START_IDX, commandLength);
         return new String(commandBytes, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Reads and retrieves the length of a message or command.
+     *
+     * @return The length of the message or command.
+     * @throws IOException If an I/O error occurs.
+     */
     private int getLength() throws IOException {
+        // Read the bytes representing the length of the message or command
         byte[] totalLengthCommandByteArray = new byte[BYTES_FOR_ONE_INTEGER]; // first 4 bytes
         in.readFully(totalLengthCommandByteArray, START_IDX, BYTES_FOR_ONE_INTEGER);
+        // Convert the byte array to an integer
         return SendingMessageUtils.convertByteArrayToInt(totalLengthCommandByteArray);
     }
 
+    /**
+     * Reads and retrieves the message sent by the other user.
+     *
+     * @param messageLength The length of the message to be read.
+     * @return The message received from the other user.
+     * @throws IOException If an I/O error occurs.
+     */
     private String getMessage(int messageLength) throws IOException {
+        // Read the bytes representing the message and construct a String
         byte[] messageBytes = new byte[messageLength];
         in.readFully(messageBytes, START_IDX, messageLength);
         return new String(messageBytes, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Receives and retrieves the file name sent by the other user.
+     *
+     * @param fileNameLength The length of the file name to be read.
+     * @return The file name received from the other user.
+     * @throws IOException If an I/O error occurs.
+     */
     private String getFileName(int fileNameLength) throws IOException {
         byte[] fileNameBytes = new byte[fileNameLength];
         in.readFully(fileNameBytes, START_IDX, fileNameLength);
         return new String(fileNameBytes, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Reads and retrieves the length of the file sent by the other user.
+     *
+     * @return The length of the file received from the other user.
+     * @throws IOException If an I/O error occurs.
+     */
     private long getFileLength() throws IOException {
         byte[] totalFileLengthByteArray = new byte[BYTES_FOR_ONE_LONG];
         in.readFully(totalFileLengthByteArray, START_IDX, BYTES_FOR_ONE_LONG);
         return SendingFileUtils.convertByteArrayToLong(totalFileLengthByteArray);
     }
 
+    /**
+     * Generates a string representation of the current time in the specified format.
+     *
+     * @return A string representing the current time.
+     */
     public static String getTimeString() {
         LocalTime currentTime = LocalTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_FORMAT);
