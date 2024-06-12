@@ -1,5 +1,6 @@
 package chatapp_combined.messagesCommand;
 
+import chatapp_combined.ClientServer;
 import chatapp_combined.Utility.SendingFileUtils;
 import chatapp_combined.Utility.SendingMessageUtils;
 
@@ -86,10 +87,8 @@ public class Message implements Serializable {
                 while (true) {
                     receiveFromOtherUser();
                 }
-            } catch (EOFException e) {
-                System.out.println(getTimeString() + senderName + " disconnected!");
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.printf(getTimeString() + "%s logged out!" + System.lineSeparator(), senderName);
             }
         }).start();
     }
