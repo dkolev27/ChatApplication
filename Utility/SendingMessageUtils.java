@@ -54,7 +54,7 @@ public class SendingMessageUtils {
      * @param message The message to convert.
      * @return A byte array representing the command and the message.
      */
-    public static byte[] bytesToSend(String message) {
+    private static byte[] bytesToSend(String message) {
         // Define the index where the command part of the message ends
         final int END_COMMAND_IDX = 2;
 

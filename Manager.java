@@ -32,7 +32,9 @@ public class Manager {
 
     // Main business logic for managing the connection
     public void manage() throws IOException, InterruptedException {
-        String username;
+        // If we want to choose names for us
+        // String username;
+
         try {
             serverSocket = new ServerSocket(PORT);
             clientSocket = serverSocket.accept();
@@ -59,7 +61,7 @@ public class Manager {
     }
 
     private static void execute(String username) throws InterruptedException, IOException {
-        Message message = new Message(serverSocket, clientSocket, in, out, username);
+        Message message = new Message(in, out, username);
 
         // Send a message using a separate thread
         SendMessage sendMessage = new SendMessage(message);

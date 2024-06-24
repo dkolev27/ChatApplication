@@ -1,13 +1,16 @@
 package chatapp_combined.Utility;
 
-import chatapp_combined.messagesCommand.Message;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+
+import static chatapp_combined.Utility.CommonUtils.getTimeString;
 
 /**
  * Utility class for sending files in a chat application.
@@ -99,9 +102,9 @@ public class SendingFileUtils {
      * @param file       The file to be sent.
      * @param fileLength The length of the file.
      */
-    public static void sendFileInChunks(DataOutputStream out, File file, long fileLength) {
+    private static void sendFileInChunks(DataOutputStream out, File file, long fileLength) {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            System.out.println(Message.getTimeString() + " Sending file...");
+            System.out.println(getTimeString() + " Sending file...");
 
             int chunkSize = CHUNK_SIZE; // Size of each chunk
 
@@ -126,7 +129,7 @@ public class SendingFileUtils {
             out.write(fileHash);
             out.flush();
 
-            System.out.println(Message.getTimeString() + " File sent!");
+            System.out.println(getTimeString() + " File sent!");
         } catch (IOException | NoSuchAlgorithmException ex) {
             ex.printStackTrace();
         }
