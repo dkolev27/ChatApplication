@@ -1,16 +1,13 @@
 package chatapp_combined.Utility;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import static chatapp_combined.Utility.CommonUtils.getLength;
-import static chatapp_combined.Utility.CommonUtils.getTimeString;
+import static chatapp_combined.Utility.CommonUtils.*;
+
 
 public class ReceivingFileUtils {
 
@@ -54,32 +51,32 @@ public class ReceivingFileUtils {
      * @param in The DataInputStream from which the file is read.
      * @param senderName The name of the sender.
      */
-    private static void receiveFileInChunks(long fileLength, File fileToReceive, DataInputStream in, String senderName) {
+    private static void receiveFileInChunks(long fileLength, File fileToReceive, DataInputStream in, String senderName) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(fileToReceive)) {
             System.out.println(getTimeString() + "Receiving file...");
 
             // Set the chunk size for reading the file
-            final int chunkSize = CHUNK_SIZE;      // sends 9.67GB for 4 min and 56 seconds
+            //final int chunkSize = CHUNK_SIZE;      // sends 9.67GB for 4 min and 56 seconds
             //final int chunkSize = CHUNK_SIZE * 4;  // sends 9.67GB for 5 min and 38 seconds
             //final int chunkSize = CHUNK_SIZE * 8;  // sends 9.67GB for 4 min and 56 seconds
             //final int chunkSize = CHUNK_SIZE * 16; // checksum failed
             //final int chunkSize = CHUNK_SIZE * 32; // checksum failed
 
-            byte[] buffer = new byte[chunkSize];
+            byte[] buffer = new byte[CHUNK_SIZE];
 
             // Create a MessageDigest instance for checksum calculation
             MessageDigest md = MessageDigest.getInstance(CHECKSUM_ALGORITHM);
 
             int bytesRead;
             long totalBytesLeft = fileLength;
-            long end = (fileLength / chunkSize) + 1;
+            long end = (fileLength / CHUNK_SIZE) + 1;
 
             // Read the file in chunks
             for (int i = 0; i < end; i++) {
-                bytesRead = in.read(buffer, START_IDX, (int) Math.min(totalBytesLeft, chunkSize));
+                bytesRead = in.read(buffer, START_IDX, (int) Math.min(totalBytesLeft, CHUNK_SIZE));
                 fileOutputStream.write(buffer, START_IDX, bytesRead);
                 md.update(buffer, START_IDX, bytesRead); // Update the file hash with the new chunk
-                totalBytesLeft -= chunkSize;
+                totalBytesLeft -= CHUNK_SIZE;
             }
 
             // Receive the hash of the file as byte[]
@@ -100,8 +97,12 @@ public class ReceivingFileUtils {
                         " Received file hash doesn't match calculated hash. File may be corrupted." +
                         " Try to send it again.");
             }
-        } catch (IOException | NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+        } catch (IOException ex) {
+            System.out.println("Nothing to receive!");
+            fileToReceive.deleteOnExit();
+            in.close();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -116,6 +117,7 @@ public class ReceivingFileUtils {
     private static String getFileName(int fileNameLength, DataInputStream in) throws IOException {
         byte[] fileNameBytes = new byte[fileNameLength];
         in.readFully(fileNameBytes, START_IDX, fileNameLength);
+
         return new String(fileNameBytes, StandardCharsets.UTF_8);
     }
 
@@ -129,6 +131,8 @@ public class ReceivingFileUtils {
     private static long getFileLength(DataInputStream in) throws IOException {
         byte[] totalFileLengthByteArray = new byte[BYTES_FOR_ONE_LONG];
         in.readFully(totalFileLengthByteArray, START_IDX, BYTES_FOR_ONE_LONG);
-        return SendingFileUtils.convertByteArrayToLong(totalFileLengthByteArray);
+
+        return convertByteArrayToLong(totalFileLengthByteArray);
     }
+
 }

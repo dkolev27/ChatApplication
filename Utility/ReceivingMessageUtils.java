@@ -10,7 +10,7 @@ import static chatapp_combined.Utility.CommonUtils.getTimeString;
 
 public class ReceivingMessageUtils {
 
-    // Constants
+    // Constant
     private static final int START_IDX = 0;
 
 
@@ -41,6 +41,7 @@ public class ReceivingMessageUtils {
         // Read the bytes representing the command and construct a String
         byte[] commandBytes = new byte[commandLength];
         in.readFully(commandBytes, START_IDX, commandLength);
+
         return new String(commandBytes, StandardCharsets.UTF_8);
     }
 
@@ -55,6 +56,7 @@ public class ReceivingMessageUtils {
         // Read the bytes representing the message and construct a String
         byte[] messageBytes = new byte[messageLength];
         in.readFully(messageBytes, START_IDX, messageLength);
+
         return new String(messageBytes, StandardCharsets.UTF_8);
     }
 

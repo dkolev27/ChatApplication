@@ -5,12 +5,11 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
-import static chatapp_combined.Utility.CommonUtils.getTimeString;
+import static chatapp_combined.Utility.CommonUtils.*;
 
 /**
  * Utility class for sending files in a chat application.
@@ -19,32 +18,10 @@ public class SendingFileUtils {
 
     // Constants
     public static final int CHUNK_SIZE = 1024;
-    private static final int BYTES_FOR_LONG = 8;
     private static final int START_IDX = 0;
     private static final String CHECKSUM_ALGORITHM = "MD5";
+    private static final String DIRECTORY_WITH_FILES = "filesToSend";
 
-    /**
-     * Converts a long value to a byte array.
-     *
-     * @param l The long value to be converted.
-     * @return The byte array representation of the long value.
-     */
-    public static byte[] convertLongToByteArray(final long l) {
-        ByteBuffer buffer = ByteBuffer.allocate(BYTES_FOR_LONG);
-        buffer.putLong(l);
-        return buffer.array();
-    }
-
-    /**
-     * Converts a byte array to a long value.
-     *
-     * @param byteArray The byte array to be converted.
-     * @return The long value represented by the byte array.
-     */
-    public static long convertByteArrayToLong(final byte[] byteArray) {
-        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-        return buffer.getLong();
-    }
 
     /**
      * Sends a file over a DataOutputStream.
@@ -62,12 +39,15 @@ public class SendingFileUtils {
 
         // Get the length of the command in byte[]
         int totalLengthCommand = command.length();
-        byte[] totalLengthCommandAsByteArray = SendingMessageUtils.convertIntToByteArray(totalLengthCommand);
+        byte[] totalLengthCommandAsByteArray = convertIntToByteArray(totalLengthCommand);
 
         // Get the command in byte[]
         byte[] commandBytes = command.getBytes();
 
         File file = new File(path);
+
+        // Checks if the file exists
+        if (doesFileNotExist(path)) return;
 
         // Get the file length in byte[]
         long fileLength = file.length();
@@ -77,7 +57,7 @@ public class SendingFileUtils {
 
         // Get the fileName length in byte[]
         int totalLengthFileName = fileName.length();
-        byte[] totalLengthFileNameAsByteArray = SendingMessageUtils.convertIntToByteArray(totalLengthFileName);
+        byte[] totalLengthFileNameAsByteArray = convertIntToByteArray(totalLengthFileName);
 
         // Get the fileName in byte[]
         byte[] fileNameBytes = fileName.getBytes();
@@ -95,6 +75,17 @@ public class SendingFileUtils {
         sendFileInChunks(out, file, fileLength);
     }
 
+    private static boolean doesFileNotExist(String path) {
+        File directory = new File(DIRECTORY_WITH_FILES);
+        File fileToCheck = new File(directory, path);
+
+        if (!fileToCheck.exists()) {
+            System.out.println("File does not exist!");
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Sends the file in chunks over a DataOutputStream.
      *
@@ -102,7 +93,7 @@ public class SendingFileUtils {
      * @param file       The file to be sent.
      * @param fileLength The length of the file.
      */
-    private static void sendFileInChunks(DataOutputStream out, File file, long fileLength) {
+    private static void sendFileInChunks(DataOutputStream out, File file, long fileLength) throws IOException {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
             System.out.println(getTimeString() + " Sending file...");
 
@@ -131,7 +122,7 @@ public class SendingFileUtils {
 
             System.out.println(getTimeString() + " File sent!");
         } catch (IOException | NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+            System.out.println("No such file existing!");
         }
     }
 

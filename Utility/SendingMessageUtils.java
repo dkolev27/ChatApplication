@@ -5,36 +5,15 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+import static chatapp_combined.Utility.CommonUtils.convertIntToByteArray;
+
 public class SendingMessageUtils {
 
     // Constants
-    private static final int BYTES_FOR_INTEGER = 4; // Number of bytes to represent an integer
     private static final int START_IDX = 0; // Starting index for array operations
 
+
     // Utility methods for sending messages
-    /**
-     * Converts an integer to a byte array.
-     *
-     * @param i The integer to convert.
-     * @return A byte array representing the integer.
-     */
-    public static byte[] convertIntToByteArray(final int i) {
-        ByteBuffer buffer = ByteBuffer.allocate(BYTES_FOR_INTEGER);
-        buffer.putInt(i);
-        return buffer.array();
-    }
-
-    /**
-     * Converts a byte array to an integer.
-     *
-     * @param byteArray The byte array to convert.
-     * @return An integer represented by the byte array.
-     */
-    public static int convertByteArrayToInt(final byte[] byteArray) {
-        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-        return buffer.getInt();
-    }
-
     /**
      * Sends a message as bytes through a DataOutputStream.
      *
