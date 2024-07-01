@@ -4,8 +4,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static chatapp_combined.Utility.CommonUtils.getLength;
-import static chatapp_combined.Utility.CommonUtils.getTimeString;
+import static chatapp_combined.Utility.CommonUtils.*;
 import static chatapp_combined.Utility.ReceivingFileUtils.receiveFile;
 import static chatapp_combined.Utility.ReceivingMessageUtils.getCommand;
 import static chatapp_combined.Utility.ReceivingMessageUtils.receiveMessage;
@@ -27,9 +26,6 @@ public class Message implements Serializable {
     private final String MESSAGE_COMMAND = "-m";
     private final String FILE_COMMAND = "-f";
     private final int START_IDX = 0;
-
-    private static final String ANSI_BLUE = "\u001B[34m";
-    private static final String ANSI_RESET = "\u001B[0m";
 
 
     // Fields
@@ -78,7 +74,7 @@ public class Message implements Serializable {
                     receiveFromOtherUser();
                 }
             } catch (IOException e) {
-                System.out.printf(getTimeString() + "%s logged out!" + System.lineSeparator(), senderName);
+                System.out.printf(ANSI_PURPLE + getTimeString() + "%s logged out!" + System.lineSeparator() + ANSI_RESET, senderName);
             }
         }).start();
     }

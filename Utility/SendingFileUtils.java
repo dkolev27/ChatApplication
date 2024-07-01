@@ -80,7 +80,7 @@ public class SendingFileUtils {
         File fileToCheck = new File(directory, path);
 
         if (!fileToCheck.exists()) {
-            System.out.println("File does not exist!");
+            System.out.println(ANSI_RED + "File does not exist!" + ANSI_RESET);
             return true;
         }
         return false;

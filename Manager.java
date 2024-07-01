@@ -1,5 +1,6 @@
 package chatapp_combined;
 
+import chatapp_combined.Utility.CommonUtils;
 import chatapp_combined.messagesCommand.Message;
 import chatapp_combined.messagesCommand.ReceiveMessage;
 import chatapp_combined.messagesCommand.SendMessage;
@@ -11,6 +12,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import static chatapp_combined.Utility.CommonUtils.ANSI_CYAN;
+import static chatapp_combined.Utility.CommonUtils.ANSI_RESET;
 
 // The Manager class handles the setup and management of the chat application,
 // including establishing connections and managing message and stream operations.
@@ -41,7 +45,7 @@ public class Manager {
             out = new DataOutputStream(clientSocket.getOutputStream());
             in = new DataInputStream(clientSocket.getInputStream());
 
-            System.out.println(USER_1 + " has joined the chat!");
+            System.out.println(ANSI_CYAN + USER_1 + " has joined the chat!" + ANSI_RESET);
 
             execute(USER_1);
         } catch (IOException | InterruptedException e) {
@@ -49,7 +53,7 @@ public class Manager {
             out = new DataOutputStream(clientSocket.getOutputStream());
             in = new DataInputStream(clientSocket.getInputStream());
 
-            System.out.println(USER_2 + " has joined the chat!");
+            System.out.println(ANSI_CYAN + USER_2 + " has joined the chat!" + ANSI_RESET);
 
             execute(USER_2);
         } finally {
