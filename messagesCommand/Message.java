@@ -99,7 +99,7 @@ public class Message implements Serializable {
             runSendingCommand(command, messageToSend);
 
         } else {
-            System.out.println("Invalid command! Try again.");
+            System.out.println(ANSI_RED + "Invalid command! Try again." + ANSI_RESET);
         }
     }
 

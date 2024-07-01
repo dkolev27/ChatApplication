@@ -47,7 +47,7 @@ public class SendingFileUtils {
         File file = new File(path);
 
         // Checks if the file exists
-        if (doesFileNotExist(path)) return;
+        if (doesFileNotExist(file.getName())) return;
 
         // Get the file length in byte[]
         long fileLength = file.length();
@@ -95,7 +95,7 @@ public class SendingFileUtils {
      */
     private static void sendFileInChunks(DataOutputStream out, File file, long fileLength) throws IOException {
         try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            System.out.println(getTimeString() + " Sending file...");
+            System.out.println(ANSI_YELLOW + getTimeString() + " Sending file..." + ANSI_RESET);
 
             int chunkSize = CHUNK_SIZE; // Size of each chunk
 
@@ -120,9 +120,9 @@ public class SendingFileUtils {
             out.write(fileHash);
             out.flush();
 
-            System.out.println(getTimeString() + " File sent!");
+            System.out.println(ANSI_YELLOW + getTimeString() + " File sent!" + ANSI_RESET);
         } catch (IOException | NoSuchAlgorithmException ex) {
-            System.out.println("No such file existing!");
+            System.out.println(ANSI_RED + "Connection lost! The file may be corrupted." + ANSI_RESET);
         }
     }
 

@@ -53,7 +53,7 @@ public class ReceivingFileUtils {
      */
     private static void receiveFileInChunks(long fileLength, File fileToReceive, DataInputStream in, String senderName) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(fileToReceive)) {
-            System.out.println(getTimeString() + "Receiving file...");
+            System.out.println(ANSI_YELLOW + getTimeString() + "Receiving file..." + ANSI_RESET);
 
             // Set the chunk size for reading the file
             //final int chunkSize = CHUNK_SIZE;      // sends 9.67GB for 4 min and 56 seconds
@@ -83,24 +83,24 @@ public class ReceivingFileUtils {
             final int HASH_SIZE = 16; // MD5 generates a hash of 16 bytes (128 bits)
             byte[] receivedFileHash = new byte[HASH_SIZE];
             in.readFully(receivedFileHash);
-            System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); // For testing
+            // System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); // For testing
 
             // Calculate the hash of the received file
             byte[] calculatedFileHash = md.digest();
-            System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // For testing
+            // System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // For testing
 
             // Compare received hash and calculated hash to verify file integrity
             if (Arrays.equals(receivedFileHash, calculatedFileHash)) {
-                System.out.printf("%sFile received by %s!" + System.lineSeparator(), getTimeString(), senderName);
+                System.out.printf(ANSI_YELLOW + "%sFile received by %s!" + ANSI_RESET + System.lineSeparator(),
+                        getTimeString(), senderName);
             } else {
-                System.out.println(getTimeString() +
+                System.out.println(ANSI_RED + getTimeString() +
                         " Received file hash doesn't match calculated hash. File may be corrupted." +
-                        " Try to send it again.");
+                        " Try to send it again." + ANSI_RESET);
             }
         } catch (IOException ex) {
-            System.out.println("Nothing to receive!");
+            System.out.println(ANSI_RED + "Nothing to be received. Connection lost!" + ANSI_RESET);
             fileToReceive.deleteOnExit();
-            in.close();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
