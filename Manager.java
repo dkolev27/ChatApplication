@@ -18,6 +18,8 @@ import static chatapp_combined.Utility.CommonUtils.ANSI_RESET;
 /**
  * The type Manager class handles the setup and management of the chat application,
  * including establishing connections and managing message and stream operations.
+ *
+ * @author Dimitar Kolev
  */
 public final class Manager {
 
@@ -77,6 +79,12 @@ public final class Manager {
     }
 
     private static void execute(String username) throws InterruptedException, IOException {
+        startChatting(username);
+
+        Thread.currentThread().join();
+    }
+
+    private static void startChatting(String username) {
         final Message message = new Message(inputStream, outputStream, username);
 
         // Send a message using a separate thread
@@ -86,8 +94,6 @@ public final class Manager {
         // Receive a message using a separate thread
         final ReceiveMessage receiveMessage = new ReceiveMessage(message);
         receiveMessage.execute();
-
-        Thread.currentThread().join();
     }
 
 }
