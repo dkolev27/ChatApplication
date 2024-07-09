@@ -1,18 +1,22 @@
 package chatapp_combined.messagesCommand;
 
+/**
+ * The type Send message.
+ *
+ * @author Dimitar Kolev
+ */
 // Class representing a command to send a message
 public class SendMessage implements Command {
 
-    // Field to hold the message instance
     private final Message message;
 
-    // Constructor
+
     /**
      * Constructs a SendMessage command with the specified Message.
      *
      * @param message The message instance to be sent.
      */
-    public SendMessage(Message message) {
+    public SendMessage(final Message message) {
         this.message = message;
     }
 

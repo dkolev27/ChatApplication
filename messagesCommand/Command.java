@@ -2,6 +2,9 @@ package chatapp_combined.messagesCommand;
 
 import java.io.IOException;
 
+/**
+ * The interface Command.
+ */
 // Interface representing a generic command in the chat application
 public interface Command {
 

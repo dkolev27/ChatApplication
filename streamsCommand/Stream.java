@@ -5,33 +5,47 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.Logger;
 
-// The Stream class handles the input and output streams for network communication
+/**
+ * The type Stream.
+ * The Class handles the input and output streams for network communication
+ *
+ * @author Dimitar Kolev
+ */
 public class Stream {
 
-    // Fields
-    private final ServerSocket serverSocket;  // The server socket
-    private final Socket clientSocket;        // The client socket
-    private final DataInputStream in;         // Input stream for reading data
-    private final DataOutputStream out;       // Output stream for sending data
+    private final ServerSocket serverSocket;
+    private final Socket clientSocket;
+    private final DataInputStream inputStream;
+    private final DataOutputStream outputStream;
 
-    // Constructor
-    public Stream(ServerSocket serverSocket, Socket clientSocket, DataInputStream in, DataOutputStream out) {
+    /**
+     * Instantiates a new Stream.
+     *
+     * @param serverSocket the server socket
+     * @param clientSocket the client socket
+     * @param inputStream  the in
+     * @param outputStream the out
+     */
+    public Stream(final ServerSocket serverSocket, final Socket clientSocket, final DataInputStream inputStream, final DataOutputStream outputStream) {
         this.serverSocket = serverSocket;
         this.clientSocket = clientSocket;
-        this.in = in;
-        this.out = out;
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
     }
 
-    // Method to close all streams and sockets
+    /**
+     * Close all streams and sockets.
+     */
     public void closeEverything() {
         try {
-            if (in != null) {
-                in.close();
+            if (inputStream != null) {
+                inputStream.close();
             }
 
-            if (out != null) {
-                out.close();
+            if (outputStream != null) {
+                outputStream.close();
             }
 
             if (clientSocket != null) {
@@ -42,7 +56,7 @@ public class Stream {
                 serverSocket.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.getLogger("Failed closure.");
         }
     }
 

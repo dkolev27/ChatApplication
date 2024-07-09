@@ -1,18 +1,22 @@
 package chatapp_combined.messagesCommand;
 
-// Class representing a command to receive a message
+/**
+ * The type Receive message.
+ * Class representing a command to receive a message.
+ *
+ * @author Dimitar Kolev
+ */
 public class ReceiveMessage implements Command {
 
-    // Field to hold the message instance
     private final Message message;
 
-    // Constructor
+
     /**
      * Constructs a ReceiveMessage command with the specified Message.
      *
      * @param message The message instance to be received.
      */
-    public ReceiveMessage(Message message) {
+    public ReceiveMessage(final Message message) {
         this.message = message;
     }
 

@@ -8,23 +8,37 @@ import static chatapp_combined.Utility.CommonUtils.getLength;
 import static chatapp_combined.Utility.CommonUtils.getTimeString;
 
 
-public class ReceivingMessageUtils {
+/**
+ * The type Receiving message utils.
+ *
+ * @author Dimitar Kolev
+ */
+public final class ReceivingMessageUtils {
 
-    // Constant
     private static final int START_IDX = 0;
+
+
+    /**
+     * Private constructor does not allow an instance to be created
+     */
+    private ReceivingMessageUtils() {
+
+    }
 
 
     /**
      * Receives a message from the other user and prints it to the console.
      *
+     * @param senderName  the sender name
+     * @param inputStream the input stream
      * @throws IOException If an I/O error occurs.
      */
-    public static void receiveMessage(String senderName, DataInputStream in) throws IOException {
+    public static void receiveMessage(final String senderName, final DataInputStream inputStream) throws IOException {
         // Read the total length of the message
-        int messageLength = getLength(in);
+        final int messageLength = getLength(inputStream);
 
         // Read the message bytes and construct a String representing the message
-        String message = getMessage(messageLength, in);
+        final String message = getMessage(messageLength, inputStream);
 
         // Print the received message along with the sender's name and timestamp
         System.out.println(getTimeString() + senderName + ": " + message);
@@ -34,13 +48,14 @@ public class ReceivingMessageUtils {
      * Reads and retrieves the command sent by the other user.
      *
      * @param commandLength The length of the command to be read.
+     * @param inputStream   the input stream
      * @return The command received from the other user.
      * @throws IOException If an I/O error occurs.
      */
-    public static String getCommand(int commandLength, DataInputStream in) throws IOException {
+    public static String getCommand(final int commandLength, final DataInputStream inputStream) throws IOException {
         // Read the bytes representing the command and construct a String
-        byte[] commandBytes = new byte[commandLength];
-        in.readFully(commandBytes, START_IDX, commandLength);
+        final byte[] commandBytes = new byte[commandLength];
+        inputStream.readFully(commandBytes, START_IDX, commandLength);
 
         return new String(commandBytes, StandardCharsets.UTF_8);
     }
@@ -52,10 +67,10 @@ public class ReceivingMessageUtils {
      * @return The message received from the other user.
      * @throws IOException If an I/O error occurs.
      */
-    private static String getMessage(int messageLength, DataInputStream in) throws IOException {
+    private static String getMessage(final int messageLength, final DataInputStream inputStream) throws IOException {
         // Read the bytes representing the message and construct a String
-        byte[] messageBytes = new byte[messageLength];
-        in.readFully(messageBytes, START_IDX, messageLength);
+        final byte[] messageBytes = new byte[messageLength];
+        inputStream.readFully(messageBytes, START_IDX, messageLength);
 
         return new String(messageBytes, StandardCharsets.UTF_8);
     }

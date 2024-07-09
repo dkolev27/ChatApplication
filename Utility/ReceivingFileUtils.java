@@ -1,6 +1,9 @@
 package chatapp_combined.Utility;
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -9,49 +12,66 @@ import java.util.Arrays;
 import static chatapp_combined.Utility.CommonUtils.*;
 
 
-public class ReceivingFileUtils {
+/**
+ * The type Receiving file utils.
+ *
+ * @author Dimitar Kolev
+ */
+public final class ReceivingFileUtils {
 
-    // Constants
-    private static final int BYTES_FOR_ONE_LONG = 8;
+    /**
+     * LONG_SIZE represents the number of bytes a long has,
+     * a long has 8 bytes
+     */
+    private static final int LONG_SIZE = 8;
     private static final int START_IDX = 0;
     private static final int CHUNK_SIZE = 1024;
 
-    private static final String DIRECTORY_TO_RECEIVE = "receivedFiles";
+    private static final String DIR_TO_RECEIVE = "receivedFiles";
     private static final String CHECKSUM_ALGORITHM = "MD5";
+
+    /**
+     * Private constructor does not allow an instance to be created
+     */
+    private ReceivingFileUtils() {
+
+    }
+
 
     /**
      * Receives a file from the sender through the DataInputStream.
      *
-     * @param senderName The name of the sender.
-     * @param in The DataInputStream from which the file is read.
+     * @param senderName  The name of the sender.
+     * @param inputStream The DataInputStream from which the file is read.
      * @throws IOException If an I/O error occurs.
      */
-    public static void receiveFile(String senderName, DataInputStream in) throws IOException {
+    public static void receiveFile(final String senderName, final DataInputStream inputStream) throws IOException {
         // Read the total length of the file
-        long fileLength = getFileLength(in);
+        final long fileLength = getFileLength(inputStream);
 
         // Read the total fileName length
-        int fileNameLength = getLength(in);
+        final int fileNameLength = getLength(inputStream);
 
         // Read the fileName
-        String fileName = getFileName(fileNameLength, in);
+        final String fileName = getFileName(fileNameLength, inputStream);
 
         // Create a file object to receive the file
-        File fileToReceive = new File(DIRECTORY_TO_RECEIVE, fileName);
+        final File fileToReceive = new File(DIR_TO_RECEIVE, fileName);
 
-        // Receive the file in chunks of 1024 bytes (1KB)
-        receiveFileInChunks(fileLength, fileToReceive, in, senderName);
+        // Receive the file inputStream chunks of 1024 bytes (1KB)
+        receiveFileInChunks(fileLength, fileToReceive, inputStream, senderName);
     }
 
     /**
-     * Receives the file in chunks of specified size and writes it to the disk.
+     * Receives the file inputStream chunks of specified size and writes it to the disk.
      *
-     * @param fileLength The total length of the file.
+     * @param fileLength    The total length of the file.
      * @param fileToReceive The file object to write the received file.
-     * @param in The DataInputStream from which the file is read.
-     * @param senderName The name of the sender.
+     * @param inputStream   The DataInputStream from which the file is read.
+     * @param senderName    The name of the sender.
      */
-    private static void receiveFileInChunks(long fileLength, File fileToReceive, DataInputStream in, String senderName) throws IOException {
+    private static void receiveFileInChunks(final long fileLength, final File fileToReceive, final DataInputStream inputStream,
+                                            final String senderName) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(fileToReceive)) {
             System.out.println(ANSI_YELLOW + getTimeString() + "Receiving file..." + ANSI_RESET);
 
@@ -62,35 +82,35 @@ public class ReceivingFileUtils {
             //final int chunkSize = CHUNK_SIZE * 16; // checksum failed
             //final int chunkSize = CHUNK_SIZE * 32; // checksum failed
 
-            byte[] buffer = new byte[CHUNK_SIZE];
+            final byte[] buffer = new byte[CHUNK_SIZE];
 
             // Create a MessageDigest instance for checksum calculation
-            MessageDigest md = MessageDigest.getInstance(CHECKSUM_ALGORITHM);
+            final MessageDigest messageDigest = MessageDigest.getInstance(CHECKSUM_ALGORITHM);
 
             int bytesRead;
             long totalBytesLeft = fileLength;
-            long end = (fileLength / CHUNK_SIZE) + 1;
+            final long end = (fileLength / CHUNK_SIZE) + 1;
 
-            // Read the file in chunks
+            // Read the file inputStream chunks
             for (int i = 0; i < end; i++) {
-                bytesRead = in.read(buffer, START_IDX, (int) Math.min(totalBytesLeft, CHUNK_SIZE));
+                bytesRead = inputStream.read(buffer, START_IDX, (int) Math.min(totalBytesLeft, CHUNK_SIZE));
                 fileOutputStream.write(buffer, START_IDX, bytesRead);
-                md.update(buffer, START_IDX, bytesRead); // Update the file hash with the new chunk
+                messageDigest.update(buffer, START_IDX, bytesRead); // Update the file hash with the new chunk
                 totalBytesLeft -= CHUNK_SIZE;
             }
 
             // Receive the hash of the file as byte[]
-            final int HASH_SIZE = 16; // MD5 generates a hash of 16 bytes (128 bits)
-            byte[] receivedFileHash = new byte[HASH_SIZE];
-            in.readFully(receivedFileHash);
+            final int hashSize = 16; // MD5 generates a hash of 16 bytes (128 bits)
+            final byte[] receivedFileHash = new byte[hashSize];
+            inputStream.readFully(receivedFileHash);
             // System.out.println("received file checkSum:   " + new String(receivedFileHash, StandardCharsets.UTF_16)); // For testing
 
             // Calculate the hash of the received file
-            byte[] calculatedFileHash = md.digest();
-            // System.out.println("calculated file checkSum: " + new String(calculatedFileHash, StandardCharsets.UTF_16)); // For testing
+            final byte[] calcFileHash = messageDigest.digest();
+            // System.out.println("calculated file checkSum: " + new String(calcFileHash, StandardCharsets.UTF_16)); // For testing
 
             // Compare received hash and calculated hash to verify file integrity
-            if (Arrays.equals(receivedFileHash, calculatedFileHash)) {
+            if (Arrays.equals(receivedFileHash, calcFileHash)) {
                 System.out.printf(ANSI_YELLOW + "%sFile received by %s!" + ANSI_RESET + System.lineSeparator(),
                         getTimeString(), senderName);
             } else {
@@ -110,13 +130,13 @@ public class ReceivingFileUtils {
      * Reads the file name from the DataInputStream.
      *
      * @param fileNameLength The length of the file name.
-     * @param in The DataInputStream from which the file name is read.
+     * @param inputStream    The DataInputStream from which the file name is read.
      * @return The file name as a String.
      * @throws IOException If an I/O error occurs.
      */
-    private static String getFileName(int fileNameLength, DataInputStream in) throws IOException {
-        byte[] fileNameBytes = new byte[fileNameLength];
-        in.readFully(fileNameBytes, START_IDX, fileNameLength);
+    private static String getFileName(final int fileNameLength, final DataInputStream inputStream) throws IOException {
+        final byte[] fileNameBytes = new byte[fileNameLength];
+        inputStream.readFully(fileNameBytes, START_IDX, fileNameLength);
 
         return new String(fileNameBytes, StandardCharsets.UTF_8);
     }
@@ -124,15 +144,15 @@ public class ReceivingFileUtils {
     /**
      * Reads and retrieves the length of the file sent by the other user.
      *
-     * @param in The DataInputStream from which the file length is read.
+     * @param inputStream The DataInputStream from which the file length is read.
      * @return The length of the file received from the other user.
      * @throws IOException If an I/O error occurs.
      */
-    private static long getFileLength(DataInputStream in) throws IOException {
-        byte[] totalFileLengthByteArray = new byte[BYTES_FOR_ONE_LONG];
-        in.readFully(totalFileLengthByteArray, START_IDX, BYTES_FOR_ONE_LONG);
+    private static long getFileLength(final DataInputStream inputStream) throws IOException {
+        final byte[] fileLength = new byte[LONG_SIZE];
+        inputStream.readFully(fileLength, START_IDX, LONG_SIZE);
 
-        return convertByteArrayToLong(totalFileLengthByteArray);
+        return convertByteArrayToLong(fileLength);
     }
 
 }

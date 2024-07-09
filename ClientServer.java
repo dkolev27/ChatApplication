@@ -1,13 +1,27 @@
 package chatapp_combined;
 
-import java.io.*;
+import java.io.IOException;
 
-public class ClientServer {
-    public static void main(String[] args) throws IOException, InterruptedException {
+/**
+ * The type Client server.
+ */
+public final class ClientServer {
 
-        // The main thread that runs the whole program
-        Manager manager = new Manager();
-        manager.manage();
+    private ClientServer() {
 
     }
+
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     * @throws IOException          the io exception
+     * @throws InterruptedException the interrupted exception
+     */
+    public static void main(String[] args) throws IOException, InterruptedException {
+
+        Manager.manage();
+
+    }
+
 }

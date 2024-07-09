@@ -2,29 +2,39 @@ package chatapp_combined.Utility;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static chatapp_combined.Utility.CommonUtils.convertIntToByteArray;
 
-public class SendingMessageUtils {
+/**
+ * The type Sending message utils.
+ *
+ * @author Dimitar Kolev
+ */
+public final class SendingMessageUtils {
 
-    // Constants
-    private static final int START_IDX = 0; // Starting index for array operations
+    private static final int START_IDX = 0;
 
 
-    // Utility methods for sending messages
+    /**
+     * Private constructor does not allow an instance to be created
+     */
+    private SendingMessageUtils() {
+
+    }
+
+
     /**
      * Sends a message as bytes through a DataOutputStream.
      *
      * @param messageToSend The message to send.
-     * @param out The DataOutputStream to send the message through.
+     * @param outputStream  The DataOutputStream to send the message through.
      * @throws IOException If an I/O error occurs.
      */
-    public static void sendMessageBytes(String messageToSend, DataOutputStream out) throws IOException {
-        byte[] toSend = bytesToSend(messageToSend);
-        out.write(toSend);
-        out.flush();
+    public static void sendMessageBytes(final String messageToSend, final DataOutputStream outputStream) throws IOException {
+        final byte[] toSend = bytesToSend(messageToSend);
+        outputStream.write(toSend);
+        outputStream.flush();
     }
 
     /**
@@ -33,32 +43,32 @@ public class SendingMessageUtils {
      * @param message The message to convert.
      * @return A byte array representing the command and the message.
      */
-    private static byte[] bytesToSend(String message) {
+    private static byte[] bytesToSend(final String message) {
         // Define the index where the command part of the message ends
-        final int END_COMMAND_IDX = 2;
+        final int endCommandIdx = 2;
 
         // Extract the command part from the message (e.g., "-m" or "-f")
-        String command = new String(Arrays.copyOfRange(message.getBytes(), START_IDX, END_COMMAND_IDX));
+        final String command = new String(Arrays.copyOfRange(message.getBytes(), START_IDX, endCommandIdx));
 
         // Convert the length of the command to a byte array
-        int totalLengthCommand = command.length();
-        byte[] totalLengthCommandAsByteArray = convertIntToByteArray(totalLengthCommand);
+        final int totalLengthCommand = command.length();
+        final byte[] totalLengthCommandAsByteArray = convertIntToByteArray(totalLengthCommand);
 
         // Convert the command itself to a byte array
-        byte[] commandBytes = command.getBytes();
+        final byte[] commandBytes = command.getBytes();
 
         // Calculate the length of the actual message (excluding the command and a separating space)
-        int totalLengthMessage = message.length() - totalLengthCommand - 1;
-        byte[] totalLengthMessageAsByteArray = convertIntToByteArray(totalLengthMessage);
+        final int totalLengthMessage = message.length() - totalLengthCommand - 1;
+        final byte[] totalLengthMessageAsByteArray = convertIntToByteArray(totalLengthMessage);
 
         // Extract the actual message part by trimming off the command and the separating space
-        final int FROM = totalLengthCommand + 1;
-        final int TO = totalLengthMessage + totalLengthCommand + 1;
-        String trimmedMessage = new String(Arrays.copyOfRange(message.getBytes(), FROM, TO));
-        byte[] messageBytes = trimmedMessage.getBytes();
+        final int startIdx = totalLengthCommand + 1;
+        final int endIdx = totalLengthMessage + totalLengthCommand + 1;
+        final String trimmedMessage = new String(Arrays.copyOfRange(message.getBytes(), startIdx, endIdx));
+        final byte[] messageBytes = trimmedMessage.getBytes();
 
         // Calculate the total length of all byte arrays combined
-        int allBytes = totalLengthCommandAsByteArray.length + commandBytes.length +
+        final int allBytes = totalLengthCommandAsByteArray.length + commandBytes.length +
                 totalLengthMessageAsByteArray.length + messageBytes.length;
 
         // Merge all byte arrays into a single byte array and return it
@@ -70,17 +80,17 @@ public class SendingMessageUtils {
      * Merges multiple byte arrays into a single byte array.
      *
      * @param totalLengthCommandAsByteArray byte array representing the length of the command
-     * @param commandBytes byte array of the command itself
+     * @param commandBytes                  byte array of the command itself
      * @param totalLengthMessageAsByteArray byte array representing the length of the message
-     * @param messageBytes byte array of the message itself
-     * @param allBytes total length of the final merged byte array
+     * @param messageBytes                  byte array of the message itself
+     * @param allBytes                      total length of the final merged byte array
      * @return a single byte array containing all provided byte arrays in sequence
      */
-    private static byte[] fillAllBytesArray(byte[] totalLengthCommandAsByteArray, byte[] commandBytes,
-                                            byte[] totalLengthMessageAsByteArray, byte[] messageBytes,
-                                            int allBytes) {
+    private static byte[] fillAllBytesArray(final byte[] totalLengthCommandAsByteArray, final byte[] commandBytes,
+                                            final byte[] totalLengthMessageAsByteArray, final byte[] messageBytes,
+                                            final int allBytes) {
         // Create a new byte array to hold all the parts
-        byte[] allBytesArray = new byte[allBytes];
+        final byte[] allBytesArray = new byte[allBytes];
 
         // Index to keep track of the current position in the final byte array
         int idx = START_IDX;
